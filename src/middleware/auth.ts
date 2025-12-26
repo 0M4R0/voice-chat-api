@@ -6,13 +6,13 @@ export const protect = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.startsWith("Bearer ")
+  const authHeader: string | undefined = req.headers.authorization;
+  const token: string | null = authHeader?.startsWith("Bearer ")
     ? authHeader.split(" ")[1]
     : null;
 
   if (!token) {
-    return res.status(401).json({ message: "Token requerido" });
+    return res.status(401).json({ message: "Token required" });
   }
 
   try {
@@ -20,6 +20,6 @@ export const protect = async (
     req.userId = payload.userId;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Token inválido o expirado" });
+    return res.status(401).json({ message: "Invalid token" });
   }
 };

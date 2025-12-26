@@ -7,11 +7,11 @@ import {
   verifyRefreshToken,
 } from "../utils/jwt";
 
-const MAX_ATTEMPTS = Number(process.env.MAX_LOGIN_ATTEMPTS);
-const LOCK_DURATION = Number(process.env.LOCK_MINUTES) * 60 * 1000;
+const MAX_ATTEMPTS: number = Number(process.env.MAX_LOGIN_ATTEMPTS);
+const LOCK_DURATION: number = Number(process.env.LOCK_MINUTES) * 60 * 1000;
 
 export async function register(data: any) {
-  const { username, email, password, discriminator } = data;
+  const { username, email, password } = data;
 
   // Validate input
   if (!username || !email || !password) {
@@ -37,6 +37,14 @@ export async function register(data: any) {
     };
   }
 
+  // Email validation
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return {
+      status: 400,
+      message: "Please enter a valid email address",
+    };
+  }
+
   // Check length
   if (password.length < 6) {
     return {
@@ -50,28 +58,15 @@ export async function register(data: any) {
   if (existsByEmail)
     return { status: 400, message: "Email already registered" };
 
-  // Check if username+discriminator combination exists (if discriminator provided)
-  if (discriminator) {
-    const existsByTag = await User.exists({
-      username: username.trim(),
-      discriminator,
-    });
-    if (existsByTag)
-      return {
-        status: 400,
-        message: "Username and discriminator combination already exists",
-      };
-  }
-
-  const finalDiscriminator =
-    discriminator || (await generateDiscriminator(username.trim()));
+  // Generate discriminator
+  const discriminatorRegistered = await generateDiscriminator(username.trim());
   const hashed = bcryptjs.hashSync(password, 12);
 
   // Create user
   const user = await User.create({
     username: username.trim(),
     email: email.toLowerCase(),
-    discriminator: finalDiscriminator,
+    discriminator: discriminatorRegistered,
     password: hashed,
     refreshTokens: [],
   });
@@ -110,7 +105,7 @@ export async function login(data: any) {
   }
 
   // Check password match
-  const isMatch = await bcryptjs.compare(password, user.password);
+  const isMatch: boolean = await bcryptjs.compare(password, user.password);
 
   if (!isMatch) {
     user.failedLoginAttempts++;
@@ -124,8 +119,8 @@ export async function login(data: any) {
   }
 
   // tokens
-  const accessToken = generateAccessToken(user._id.toString());
-  const refreshToken = generateRefreshToken(user._id.toString());
+  const accessToken: string = generateAccessToken(user._id.toString());
+  const refreshToken: string = generateRefreshToken(user._id.toString());
 
   // Remove expired tokens & limit to 5 tokens
   const now = new Date();
@@ -189,8 +184,8 @@ export async function refreshToken(refreshToken: string) {
   );
 
   // Generate new access and refresh token
-  const newRefreshToken = generateRefreshToken(user._id.toString());
-  const newAccessToken = generateAccessToken(user._id.toString());
+  const newRefreshToken: string = generateRefreshToken(user._id.toString());
+  const newAccessToken: string = generateAccessToken(user._id.toString());
 
   // Save new tokens to user's refreshTokens array
   user.refreshTokens.push({

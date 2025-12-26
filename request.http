@@ -48,14 +48,14 @@ Content-Type: application/json
 
 ### Me
 GET http://localhost:3000/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNlMDM4Mzc5N2RkZjkwNTM3YzA5YTQiLCJpYXQiOjE3NjYzNjU5MTYsImV4cCI6MTc2NjM2NjgxNn0.rL2wTJ-s_3Q1vVzypUJDFpAW5Jv7jYyW-W43BBhsWTw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNiOGI1Y2ZlOWYyMzA0OGY0ZGJhMjEiLCJpYXQiOjE3NjY2MTc4NzAsImV4cCI6MTc2NjYxODc3MH0.rA8gQadVUivCfxm21Bm3kenHAHhiUFfevDZC4R4nlEU
 
 
 ### FRIENDS
 ### Send Request
 POST http://localhost:3000/friends/send-request
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNiOGI1Y2ZlOWYyMzA0OGY0ZGJhMjEiLCJpYXQiOjE3NjYwMjU4NTIsImV4cCI6MTc2NjAyNjc1Mn0.9Vy2sywfnlPNBovehRs-esj68xr8BTGxGkOA9jK1aLo
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNiOGI1Y2ZlOWYyMzA0OGY0ZGJhMjEiLCJpYXQiOjE3NjY2MTc4NzAsImV4cCI6MTc2NjYxODc3MH0.rA8gQadVUivCfxm21Bm3kenHAHhiUFfevDZC4R4nlEU
 
 {
   "userId": "693b8b5cfe9f23048f4dba21",
@@ -65,21 +65,29 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNiO
 
 ### Get Requests
 GET http://localhost:3000/friends/requests
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNiOGI1Y2ZlOWYyMzA0OGY0ZGJhMjEiLCJpYXQiOjE3NjYwMjU4NTIsImV4cCI6MTc2NjAyNjc1Mn0.9Vy2sywfnlPNBovehRs-esj68xr8BTGxGkOA9jK1aLo
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNiOGI1Y2ZlOWYyMzA0OGY0ZGJhMjEiLCJpYXQiOjE3NjY2MTc4NzAsImV4cCI6MTc2NjYxODc3MH0.rA8gQadVUivCfxm21Bm3kenHAHhiUFfevDZC4R4nlEU
 
 ### List friends
 GET http://localhost:3000/friends/list
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNlMDM4Mzc5N2RkZjkwNTM3YzA5YTQiLCJpYXQiOjE3NjYzNjU5MTYsImV4cCI6MTc2NjM2NjgxNn0.rL2wTJ-s_3Q1vVzypUJDFpAW5Jv7jYyW-W43BBhsWTw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNiOGI1Y2ZlOWYyMzA0OGY0ZGJhMjEiLCJpYXQiOjE3NjY2MTc4NzAsImV4cCI6MTc2NjYxODc3MH0.rA8gQadVUivCfxm21Bm3kenHAHhiUFfevDZC4R4nlEU
 
 ### Respond to request
 POST http://localhost:3000/friends/respond-to-request
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNiOGI1Y2ZlOWYyMzA0OGY0ZGJhMjEiLCJpYXQiOjE3NjYwMjU4NTIsImV4cCI6MTc2NjAyNjc1Mn0.9Vy2sywfnlPNBovehRs-esj68xr8BTGxGkOA9jK1aLo
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNiOGI1Y2ZlOWYyMzA0OGY0ZGJhMjEiLCJpYXQiOjE3NjY2MTc4NzAsImV4cCI6MTc2NjYxODc3MH0.rA8gQadVUivCfxm21Bm3kenHAHhiUFfevDZC4R4nlEU
 
 {
   "userId": "693b8b5cfe9f23048f4dba21",
   "status": true
 }
+
+
+### Get messages from a friend
+GET http://localhost:3000/chat/get-messages/693e0383797ddf90537c09a4
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTNiOGI1Y2ZlOWYyMzA0OGY0ZGJhMjEiLCJpYXQiOjE3NjY2MTc4NzAsImV4cCI6MTc2NjYxODc3MH0.rA8gQadVUivCfxm21Bm3kenHAHhiUFfevDZC4R4nlEU
+
+
 
 ### Logout
 POST http://localhost:3000/auth/logout

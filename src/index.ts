@@ -4,6 +4,9 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.routes";
 import friendsRouter from "./routes/friends.routes";
+import messagesRouter from "./routes/messages.routes";
+import http from "http";
+import { initSocket } from "./sockets/socket";
 import { connectToDatabase } from "./config/database";
 import { protect } from "./middleware/auth";
 import { me } from "./controllers/auth.controller";
@@ -12,9 +15,12 @@ import { apiLimiter } from "./middleware/rateLimiter";
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+
 const PORT = process.env.PORT || 3000;
 
 app.set("trust proxy", 1);
+initSocket(server);
 
 const corsOptions = {
   origin: "http://localhost:5173",
@@ -43,10 +49,11 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/auth", authRouter);
 app.get("/me", protect, me);
 app.use("/friends", friendsRouter);
+app.use("/chat", messagesRouter);
 
 connectToDatabase()
   .then(() => {
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
   })

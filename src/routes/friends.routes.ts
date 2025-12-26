@@ -8,7 +8,7 @@ import {
 } from "../controllers/friends.controller";
 import { protect } from "../middleware/auth";
 
-const router = Router();
+const router: Router = Router();
 
 router.use(protect);
 

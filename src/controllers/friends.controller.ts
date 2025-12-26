@@ -6,6 +6,7 @@ import {
   getFriendsList,
   removeFriend,
 } from "../services/friends.service";
+import { getIO } from "../sockets/socket";
 
 export const sendRequest = async (req: Request, res: Response) => {
   try {
@@ -20,7 +21,16 @@ export const sendRequest = async (req: Request, res: Response) => {
       username,
       discriminator,
     );
-    res.status(result.status || 200).json(result);
+
+    if (result.notify) {
+      const io = getIO();
+      io.to(result.notify.toUserId).emit(result.notify.type, {
+        from: result.notify.from,
+        createdAt: result.notify.createdAt,
+      });
+    }
+
+    res.status(200).json(result);
   } catch (error: any) {
     res.status(error.status || 500).json({
       message: error.message || "Internal server error",
@@ -59,6 +69,12 @@ export const respondToRequest = async (req: Request, res: Response) => {
       senderId,
       accept,
     );
+
+    if (result.notify) {
+      const io = getIO();
+      io.to(senderId).emit(result.notify.type, result.notify.data);
+    }
+
     res.status(200).json(result);
   } catch (error: any) {
     res.status(error.status || 500).json({
@@ -72,6 +88,12 @@ export const deleteFriend = async (req: Request, res: Response) => {
     const { friendId } = req.params; // Get friendId
 
     const result = await removeFriend(req.userId as string, friendId);
+
+    if (result.notify) {
+      const io = getIO();
+      io.to(friendId).emit(result.notify.type, result.notify.data);
+    }
+
     res.status(200).json(result);
   } catch (err: any) {
     res.status(err.status || 500).json({ message: err.message });

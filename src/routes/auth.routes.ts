@@ -7,7 +7,7 @@ import {
 } from "../controllers/auth.controller";
 import { loginLimiter } from "../middleware/rateLimiter";
 
-const router = Router();
+const router: Router = Router();
 
 // Routes
 router.post("/register", registerUser);
