@@ -23,7 +23,7 @@ app.set("trust proxy", 1);
 initSocket(server);
 
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.CLIENT_URL,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -54,7 +54,7 @@ app.use("/chat", messagesRouter);
 connectToDatabase()
   .then(() => {
     server.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   })
   .catch(() => {

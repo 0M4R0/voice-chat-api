@@ -39,7 +39,9 @@ export const initSocket = (server: http.Server) => {
 
   io.on("connection", (socket: Socket) => {
     const userId: string = socket.data.userId;
-    console.log(`User connected: ${userId}`);
+    if (process.env.NODE_ENV === "development") {
+      console.log(`User connected: ${userId}`);
+    }
 
     // Join to personal room
     socket.join(userId);
@@ -120,7 +122,9 @@ export const initSocket = (server: http.Server) => {
     });
 
     socket.on("disconnect", () => {
-      console.log(`User disconnected: ${userId}`);
+      if (process.env.NODE_ENV === "development") {
+        console.log(`User disconnected: ${userId}`);
+      }
       socket.leave(userId);
     });
   });
