@@ -13,6 +13,7 @@ import {
   type Session,
 } from "../repositories/session.repository";
 
+// Max amount of sessions that a user is allowed per day
 export const MAX_DAILY_SESSIONS = 5;
 
 export type SessionEndReason =
@@ -23,6 +24,7 @@ export interface CreatedSession {
   participants: Awaited<ReturnType<typeof addParticipant>>[];
 }
 
+// Helper function
 const requireId = (value: string, name: string): void => {
   if (!value?.trim()) throw new Error(`${name} is required`);
 };
@@ -71,11 +73,13 @@ export const createSessionWithParticipants = async (
     throw new Error("A session requires two different users");
   }
 
+  // Verify that both users are allowed to start a session due to their daily session limit (5 sessions per day)
   const [firstAllowed, secondAllowed] = await Promise.all([
     canStartSession(supabase, firstUserId),
     canStartSession(supabase, secondUserId),
   ]);
 
+  // If either user is not allowed, throw an error
   if (!firstAllowed || !secondAllowed) {
     throw new Error("Daily session limit reached");
   }
@@ -83,6 +87,7 @@ export const createSessionWithParticipants = async (
   const session = await createSession(supabase);
 
   try {
+    // Add participants to the session
     const participants = await Promise.all([
       addParticipant(supabase, session.id, firstUserId),
       addParticipant(supabase, session.id, secondUserId),
@@ -145,6 +150,9 @@ export const endSession = async (
   }
 
   const participants = await getSessionParticipants(supabase, sessionId);
+
+  // Select the participants that haven't left yet (the ones with `left_at` null)
+  // and remove them from the session
   await Promise.all(
     participants
       .filter((participant) => participant.left_at === null)

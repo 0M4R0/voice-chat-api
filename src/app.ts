@@ -1,7 +1,10 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 
 const app = express();
+
+app.use(helmet());
 
 // If production, then use frontend url. If not production, then use these origins
 const ALLOWED_ORIGINS =
