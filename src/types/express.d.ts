@@ -1,6 +1,13 @@
-// Para que TypeScript reconozca req.userId
-declare namespace Express {
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+
+declare global {
+  namespace Express {
     interface Request {
-        userId?: string;
+      user?: User;
+      userToken?: string;
+      supabaseUser?: SupabaseClient;
     }
+  }
 }
+
+export {};
