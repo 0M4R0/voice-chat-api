@@ -1,32 +1,35 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { NewReport, Report } from "../repositories/reports.repository";
-import { createReport } from "../repositories/reports.repository";
-
-// Helper function to require report fields
-const requireReportFields = (report: NewReport): void => {
-  if (!report.reporter_id?.trim()) {
-    throw new Error("Reporter ID is required");
-  }
-
-  if (!report.reported_user_id?.trim()) {
-    throw new Error("Reported user ID is required");
-  }
-
-  if (!report.session_id?.trim()) {
-    throw new Error("Session ID is required");
-  }
-
-  if (!report.reason?.trim()) {
-    throw new Error("Reason is required");
-  }
-};
+import {
+  createReport,
+  type NewReport,
+  type Report,
+} from "../repositories/reports.repository";
+import { getSessionParticipants } from "../repositories/session-participants.repository";
 
 export const createReportService = async (
   supabase: SupabaseClient,
   report: NewReport,
 ): Promise<Report> => {
-  // Ensure report fields are valid
-  requireReportFields(report);
+  if (!report.reporter_id?.trim() || !report.reported_user_id?.trim()) {
+    throw new Error("Reporter and reported user IDs are required");
+  }
+  if (report.reporter_id === report.reported_user_id) {
+    throw new Error("Cannot report yourself");
+  }
 
-  return await createReport(supabase, report);
+  const reason = report.reason?.trim();
+  if (!reason || reason.length > 1000) {
+    throw new Error("Report reason must be between 1 and 1000 characters");
+  }
+
+  if (report.session_id) {
+    // Reports tied to a session must reference its actual participants.
+    const participants = await getSessionParticipants(supabase, report.session_id);
+    const participantIds = new Set(participants.map((participant) => participant.user_id));
+    if (!participantIds.has(report.reporter_id) || !participantIds.has(report.reported_user_id)) {
+      throw new Error("Users did not participate in this session");
+    }
+  }
+
+  return createReport(supabase, { ...report, reason });
 };
