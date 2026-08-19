@@ -1,6 +1,10 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import profileRoutes from "./routes/profile.routes";
+import sessionRoutes from "./routes/session.routes";
+import blocksRoutes from "./routes/blocks.routes";
+import reportsRoutes from "./routes/reports.routes";
 
 const app = express();
 
@@ -42,5 +46,11 @@ app.use(
 );
 
 app.use(express.json());
+
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
+app.use("/api/profiles", profileRoutes);
+app.use("/api/sessions", sessionRoutes);
+app.use("/api/blocks", blocksRoutes);
+app.use("/api/reports", reportsRoutes);
 
 export default app;

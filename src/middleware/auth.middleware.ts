@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { supabase, createSupabaseUserClient } from "../config/supabase.js";
+import { supabase, createSupabaseUserClient } from "../config/supabase";
 
 export const authMiddleware = async (
   req: Request,
@@ -9,14 +9,14 @@ export const authMiddleware = async (
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Token no proporcionado" });
+    return res.status(401).json({ error: "Token not provided" });
   }
 
   const token = authHeader.slice(7);
   const { data, error } = await supabase.auth.getUser(token);
 
   if (error || !data.user) {
-    return res.status(401).json({ error: "Token inválido o expirado" });
+    return res.status(401).json({ error: "Token invalid or expired" });
   }
 
   req.user = data.user;
