@@ -9,15 +9,16 @@ import {
   getSessionParticipantsController,
   leaveSessionController,
 } from "../controllers/session.controller";
+import { asyncHandler } from "../middleware/asyncHandler";
 
 const router = Router();
 router.use(authMiddleware, apiAuthenticatedLimiter);
 
-router.get("/daily", getAmountOfDailySessions);
-router.post("/", createSessionController);
-router.get("/:id/participants", getSessionParticipantsController);
-router.post("/:id/leave", leaveSessionController);
-router.post("/:id/end", endSessionController);
-router.get("/:id", getSessionController);
+router.get("/daily", asyncHandler(getAmountOfDailySessions));
+router.post("/", asyncHandler(createSessionController));
+router.get("/:id/participants", asyncHandler(getSessionParticipantsController));
+router.post("/:id/leave", asyncHandler(leaveSessionController));
+router.post("/:id/end", asyncHandler(endSessionController));
+router.get("/:id", asyncHandler(getSessionController));
 
 export default router;

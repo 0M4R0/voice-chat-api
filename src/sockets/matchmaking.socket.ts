@@ -14,16 +14,25 @@ export const registerMatchmaking = (io: Server, socket: Socket) => {
 
   const finishSession = async (roomId: string, reason: SessionEndReason) => {
     const roomSocketIds = io.sockets.adapter.rooms.get(roomId) ?? new Set<string>();
+
     const roomSockets = Array.from(roomSocketIds)
       .map((socketId) => io.sockets.sockets.get(socketId))
       .filter((roomSocket): roomSocket is Socket => Boolean(roomSocket));
-    if (!roomSockets.includes(socket)) roomSockets.push(socket);
+
+    if (!roomSockets.includes(socket))
+    {
+        roomSockets.push(socket);
+    }
 
     const sessionId = roomSockets.find((roomSocket) => roomSocket.data.sessionId)
       ?.data.sessionId as string | undefined;
+
     if (sessionId) {
       // Session cleanup is centralized in the session service.
-      await endSession(socket.data.supabase, sessionId, reason).catch(() => undefined);
+      await endSession(socket.data.supabase, sessionId, reason).catch(
+        () => undefined,
+      );
+
       io.to(roomId).emit("session_ended", { reason, sessionId });
     }
 
@@ -47,7 +56,6 @@ export const registerMatchmaking = (io: Server, socket: Socket) => {
       const match = await findMatch(supabase, userId);
 
       if (match) {
-        // Get both users and the session
         const { userA, userB, session } = match;
 
         // Create the room and emit the match result
