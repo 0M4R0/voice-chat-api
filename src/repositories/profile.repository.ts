@@ -21,25 +21,3 @@ export const getProfile = async (
   return data;
 };
 
-export const createProfile = async (
-  supabase: SupabaseClient,
-  profile: {
-    id: string;
-    username?: string | null;
-  },
-): Promise<Profile> => {
-  const { data, error } = await supabase
-    .from("profiles")
-    .insert({
-      id: profile.id,
-      username: profile.username ?? null,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-};
