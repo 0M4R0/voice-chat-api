@@ -13,19 +13,20 @@ export const registerMatchmaking = (io: Server, socket: Socket) => {
   const userId = socket.data.user.id as string;
 
   const finishSession = async (roomId: string, reason: SessionEndReason) => {
-    const roomSocketIds = io.sockets.adapter.rooms.get(roomId) ?? new Set<string>();
+    const roomSocketIds =
+      io.sockets.adapter.rooms.get(roomId) ?? new Set<string>();
 
     const roomSockets = Array.from(roomSocketIds)
       .map((socketId) => io.sockets.sockets.get(socketId))
       .filter((roomSocket): roomSocket is Socket => Boolean(roomSocket));
 
-    if (!roomSockets.includes(socket))
-    {
-        roomSockets.push(socket);
+    if (!roomSockets.includes(socket)) {
+      roomSockets.push(socket);
     }
 
-    const sessionId = roomSockets.find((roomSocket) => roomSocket.data.sessionId)
-      ?.data.sessionId as string | undefined;
+    const sessionId = roomSockets.find(
+      (roomSocket) => roomSocket.data.sessionId,
+    )?.data.sessionId as string | undefined;
 
     if (sessionId) {
       // Session cleanup is centralized in the session service.
@@ -47,13 +48,19 @@ export const registerMatchmaking = (io: Server, socket: Socket) => {
     }
   };
 
-  const requestMatch = async () => {
+  const requestMatch = async (target: Socket = socket) => {
+    const targetUserId = target.data.user.id as string;
+
     try {
-      const supabase = socket.data.supabase;
+      const supabase = target.data.supabase;
 
-      await addToQueue(supabase, userId, socket.id);
+      // Check if the target socket is already connected to a room
+      if (target.data.roomId) {
+        return;
+      }
 
-      const match = await findMatch(supabase, userId);
+      await addToQueue(supabase, targetUserId, target.id);
+      const match = await findMatch(supabase, targetUserId);
 
       if (match) {
         const { userA, userB, session } = match;
@@ -105,15 +112,15 @@ export const registerMatchmaking = (io: Server, socket: Socket) => {
         socketA.data.sessionTimer = timer;
         socketB.data.sessionTimer = timer;
       } else {
-        socket.emit("waiting");
+        target.emit("waiting");
       }
     } catch (err: any) {
-      socket.emit("match_error", { message: err.message });
-      removeFromQueue(userId);
+      target.emit("match_error", { message: err.message });
+      removeFromQueue(targetUserId);
     }
   };
 
-  socket.on("find_match", requestMatch);
+  socket.on("find_match", () => requestMatch());
 
   socket.on("cancel_match", () => {
     removeFromQueue(userId);
@@ -129,23 +136,48 @@ export const registerMatchmaking = (io: Server, socket: Socket) => {
   });
 
   socket.on("next", async () => {
-    // A user is re-queued only when they explicitly request the next match.
     const roomId = socket.data.roomId;
-    if (roomId) {
-      socket.to(roomId).emit("peer_left", { userId });
-      await finishSession(roomId, "next");
+    if (!roomId) {
+      return await requestMatch();
     }
 
-    await requestMatch();
+    // Get all peers in the room
+    const roomSocketIds = io.sockets.adapter.rooms.get(roomId) ?? new Set<string>();
+
+    // Filter out any peers that are no longer connected.
+    const roomSockets = Array.from(roomSocketIds)
+      .map((id) => io.sockets.sockets.get(id))
+      .filter((s): s is Socket => Boolean(s));
+
+    // Emit a "peer_left" event and finish the session.
+    socket.to(roomId).emit("peer_left", { userId });
+    await finishSession(roomId, "next");
+
+    // Request a match for each peer in the room.
+    await Promise.all(roomSockets.map((peer) => requestMatch(peer)));
   });
 
   socket.on("disconnect", async () => {
     removeFromQueue(userId);
 
     const roomId = socket.data.roomId;
-    if (roomId) {
-      socket.to(roomId).emit("peer_disconnected", { userId });
-      await finishSession(roomId, "disconnect");
+    if (!roomId) {
+      return;
     }
+
+    // Get all peers in the room
+    const roomSocketIds =
+      io.sockets.adapter.rooms.get(roomId) ?? new Set<string>();
+
+    // Get the remaining peers after filtering out the current socket.
+    const remaining = Array.from(roomSocketIds)
+      .map((id) => io.sockets.sockets.get(id))
+      .filter((s): s is Socket => Boolean(s) && s?.id !== socket.id);
+
+    socket.to(roomId).emit("peer_disconnected", { userId });
+    await finishSession(roomId, "disconnect");
+
+    // Request a match for the remaining peers.
+    await Promise.all(remaining.map((peer) => requestMatch(peer)));
   });
 };
