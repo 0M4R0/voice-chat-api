@@ -1,17 +1,5 @@
 import { Socket } from "socket.io";
-import { createClient } from "@supabase/supabase-js";
-import dotenv from "dotenv";
-import { createSupabaseUserClient } from "../config/supabase";
-
-dotenv.config();
-
-const SUPABASE_URL = process.env.SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY as string;
-
-const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-);
+import { createSupabaseUserClient, supabase } from "../config/supabase";
 
 export const authMiddleware = async (socket: Socket, next: (err?: Error) => void) => {
   const token =
