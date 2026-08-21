@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { BadRequestError } from "../errors/AppError";
 import {
   countUserSessionsSince,
   addParticipant,
@@ -26,7 +27,7 @@ export interface CreatedSession {
 
 // Helper function
 const requireId = (value: string, name: string): void => {
-  if (!value?.trim()) throw new Error(`${name} is required`);
+  if (!value?.trim()) throw new BadRequestError(`${name} is required`);
 };
 
 const startOfToday = (now = new Date()): string => {
@@ -70,7 +71,7 @@ export const createSessionWithParticipants = async (
   requireId(secondUserId, "Second user ID");
 
   if (firstUserId === secondUserId) {
-    throw new Error("A session requires two different users");
+    throw new BadRequestError("A session requires two different users");
   }
 
   // Verify that both users are allowed to start a session due to their daily session limit (5 sessions per day)
@@ -81,7 +82,7 @@ export const createSessionWithParticipants = async (
 
   // If either user is not allowed, throw an error
   if (!firstAllowed || !secondAllowed) {
-    throw new Error("Daily session limit reached");
+    throw new BadRequestError("Daily session limit reached");
   }
 
   const session = await createSession(supabase);
